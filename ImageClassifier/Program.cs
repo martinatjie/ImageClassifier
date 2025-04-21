@@ -6,7 +6,10 @@ string _assetsPath = Path.Combine(Environment.CurrentDirectory, "assets");
 string _imagesFolder = Path.Combine(_assetsPath, "images");
 string _trainTagsTsv = Path.Combine(_imagesFolder, "tags.tsv");
 string _testTagsTsv = Path.Combine(_imagesFolder, "test-tags.tsv");
-string _predictSingleImage = Path.Combine(_imagesFolder, "toaster3.jpg");
+//string _predictSingleImage = Path.Combine(_imagesFolder, "toaster3.jpg");
+//string _predictSingleImage = Path.Combine(_imagesFolder, "weird-t.jpg");
+//string _predictSingleImage = Path.Combine(_imagesFolder, "face.jpg");
+string _predictSingleImage = Path.Combine(_imagesFolder, "toa.jpg");
 string _inceptionTensorFlowModel = Path.Combine(_assetsPath, "inception", "tensorflow_inception_graph.pb");
 
 MLContext mlContext = new MLContext();
@@ -29,19 +32,25 @@ void ClassifySingleImage(MLContext mlContext, ITransformer model)
     //See this guide on how to use PredictionEnginePool in an ASP.NET Core Web API.
     var prediction = predictor.Predict(imageData);
 
-    Console.WriteLine($"Image: {Path.GetFileName(imageData.ImagePath)} predicted as: {prediction.PredictedLabelValue} with score: {prediction.Score?.Max()} ");
+    Console.WriteLine($"Classifying single image. Image: {Path.GetFileName(imageData.ImagePath)} predicted as: {prediction.PredictedLabelValue} " +
+        $"with score: {prediction.Score?.Max()} ");
 }
 
 ITransformer GenerateModel(MLContext mlContext)
 {
-    IEstimator<ITransformer> pipeline = mlContext.Transforms.LoadImages(outputColumnName: "input", imageFolder: _imagesFolder, inputColumnName: nameof(ImageData.ImagePath))
+    IEstimator<ITransformer> pipeline = mlContext.Transforms.LoadImages(outputColumnName: "input", imageFolder: _imagesFolder, 
+        inputColumnName: nameof(ImageData.ImagePath))
                 // The image transforms transform the images into the model's expected format.
-                .Append(mlContext.Transforms.ResizeImages(outputColumnName: "input", imageWidth: InceptionSettings.ImageWidth, imageHeight: InceptionSettings.ImageHeight, inputColumnName: "input"))
-                .Append(mlContext.Transforms.ExtractPixels(outputColumnName: "input", interleavePixelColors: InceptionSettings.ChannelsLast, offsetImage: InceptionSettings.Mean))
+                .Append(mlContext.Transforms.ResizeImages(outputColumnName: "input", imageWidth: InceptionSettings.ImageWidth, 
+                imageHeight: InceptionSettings.ImageHeight, inputColumnName: "input"))
+                .Append(mlContext.Transforms.ExtractPixels(outputColumnName: "input", 
+                interleavePixelColors: InceptionSettings.ChannelsLast, offsetImage: InceptionSettings.Mean))
                 .Append(mlContext.Model.LoadTensorFlowModel(_inceptionTensorFlowModel).
-                ScoreTensorFlowModel(outputColumnNames: new[] { "softmax2_pre_activation" }, inputColumnNames: new[] { "input" }, addBatchDimensionInput: true))
+                ScoreTensorFlowModel(outputColumnNames: new[] { "softmax2_pre_activation" }, inputColumnNames: new[] { "input" }, 
+                addBatchDimensionInput: true))
                 .Append(mlContext.Transforms.Conversion.MapValueToKey(outputColumnName: "LabelKey", inputColumnName: "Label"))
-                .Append(mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy(labelColumnName: "LabelKey", featureColumnName: "softmax2_pre_activation"))
+                .Append(mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy(labelColumnName: "LabelKey", 
+                featureColumnName: "softmax2_pre_activation"))
                 .Append(mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabelValue", "PredictedLabel"))
                 .AppendCacheCheckpoint(mlContext);
 
@@ -71,6 +80,7 @@ void DisplayResults(IEnumerable<ImagePrediction> imagePredictionData)
 {
     foreach (ImagePrediction prediction in imagePredictionData)
     {
-        Console.WriteLine($"Image: {Path.GetFileName(prediction.ImagePath)} predicted as: {prediction.PredictedLabelValue} with score: {prediction.Score?.Max()} ");
+        Console.WriteLine($"From image prediction data. Image: {Path.GetFileName(prediction.ImagePath)} predicted as: {prediction.PredictedLabelValue} " +
+            $"with score: {prediction.Score?.Max()} ");
     }
 }
