@@ -9,7 +9,8 @@ string _testTagsTsv = Path.Combine(_imagesFolder, "test-tags.tsv");
 //string _predictSingleImage = Path.Combine(_imagesFolder, "toaster3.jpg");
 //string _predictSingleImage = Path.Combine(_imagesFolder, "weird-t.jpg");
 //string _predictSingleImage = Path.Combine(_imagesFolder, "face.jpg");
-string _predictSingleImage = Path.Combine(_imagesFolder, "toa.jpg");
+//string _predictSingleImage = Path.Combine(_imagesFolder, "toa.jpg");
+string _predictSingleImage = Path.Combine(_imagesFolder, "samara-doole-3Zzsk2MG2AI-unsplash.jpg");
 string _inceptionTensorFlowModel = Path.Combine(_assetsPath, "inception", "tensorflow_inception_graph.pb");
 
 MLContext mlContext = new MLContext();
